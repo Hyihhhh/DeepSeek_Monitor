@@ -16,6 +16,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 USER_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "browser_state")
+CHROMIUM_PATH = os.environ.get("CHROMIUM_PATH")  # 可选：自定义浏览器路径，跳过 playwright install
 
 API_BASE = "https://platform.deepseek.com"
 ENDPOINTS = {
@@ -53,11 +54,15 @@ class DeepSeekScraper:
 
             os.makedirs(USER_DATA_DIR, exist_ok=True)
             self._playwright = await async_playwright().start()
-            self._context = await self._playwright.chromium.launch_persistent_context(
-                user_data_dir=USER_DATA_DIR,
-                headless=True,
-                viewport={"width": 1400, "height": 900},
-            )
+            launch_args = {
+                "user_data_dir": USER_DATA_DIR,
+                "headless": True,
+                "viewport": {"width": 1400, "height": 900},
+            }
+            if CHROMIUM_PATH:
+                launch_args["executable_path"] = CHROMIUM_PATH
+                logger.info(f"Using custom browser: {CHROMIUM_PATH}")
+            self._context = await self._playwright.chromium.launch_persistent_context(**launch_args)
             self._page = await self._context.new_page()
             await self._extract_auth()
 

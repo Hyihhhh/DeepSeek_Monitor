@@ -13,14 +13,46 @@
 ## 环境要求
 
 - Python 3.8+
-- [Playwright](https://playwright.dev/) + Chromium
+- Chromium 浏览器（二选一）：
+  - **方案 A（推荐）**：使用系统已安装的 Chrome/Edge，无需下载
+  - **方案 B**：Playwright Chromium（需下载 ~150MB）
 
 ## 安装
 
 ```bash
-git clone https://github.com/Hyihhhh/deepseek-monitor.git
-cd deepseek-monitor
+git clone https://github.com/Hyihhhh/DeepSeek_Monitor.git
+cd DeepSeek_Monitor
 pip install -r requirements.txt
+```
+
+### 浏览器配置
+
+**方案 A：使用系统浏览器（跳过下载，国内首选）**
+
+设置环境变量指向你电脑上的 Chrome 或 Edge：
+
+```bash
+# Windows PowerShell
+$env:CHROMIUM_PATH = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+# Windows CMD
+set CHROMIUM_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe
+```
+
+或者 Edge：
+```
+C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+```
+
+**方案 B：安装 Playwright Chromium（走国内镜像加速）**
+
+```bash
+# Windows CMD
+set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright/
+playwright install chromium
+
+# Windows PowerShell
+$env:PLAYWRIGHT_DOWNLOAD_HOST = "https://npmmirror.com/mirrors/playwright/"
 playwright install chromium
 ```
 
