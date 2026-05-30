@@ -18,7 +18,7 @@
 ## 安装
 
 ```bash
-git clone https://github.com/<your-username>/deepseek-monitor.git
+git clone https://github.com/Hyihhhh/deepseek-monitor.git
 cd deepseek-monitor
 pip install -r requirements.txt
 playwright install chromium
