@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DeepSeek 平台监控</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- ═══ FULL DASHBOARD ═══ -->
+    <div id="fullPanel">
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">D</div>
+                <h1>DeepSeek 平台监控</h1>
+                <span class="header-badge">实时</span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-mini" onclick="foldWindow()" title="收起到悬浮球">◀</button>
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">检查中</span>
+                <span class="header-user" id="headerUser"></span>
+            </div>
+        </header>
+
+        <section class="login-panel" id="loginPanel">
+            <div class="login-card">
+                <h3>登录 DeepSeek 开放平台</h3>
+                <div class="login-form">
+                    <div class="input-group"><label>手机号</label><input type="tel" id="phoneInput" value="18420045098" placeholder="请输入手机号"></div>
+                    <div class="input-group" id="codeGroup" style="display:none;"><label>短信验证码</label><div class="code-row"><input type="text" id="codeInput" maxlength="6" placeholder="6位验证码"><button class="btn btn-outline" id="sendCodeBtn" onclick="sendCode()">获取验证码</button></div></div>
+                    <div class="login-actions"><button class="btn btn-primary" id="loginBtn" onclick="startLogin()">发送验证码</button><button class="btn btn-primary" id="verifyBtn" style="display:none;" onclick="verifyCode()">确认登录</button></div>
+                    <div class="login-msg" id="loginMsg"></div>
+                </div>
+            </div>
+        </section>
+
+        <main class="dashboard" id="dashboard" style="display:none;">
+            <section class="section balance-bar" id="balanceBar">
+                <div class="balance-main">
+                    <div class="balance-main-label">当前余额</div>
+                    <div class="balance-main-value" id="currentBalance">¥--</div>
+                    <div class="balance-alert-row"><span>预警阈值</span><input type="number" class="alert-threshold" id="alertThreshold" value="5" min="0" step="1"><span>元</span></div>
+                </div>
+                <div class="balance-details">
+                    <div class="balance-detail-item"><span class="bdi-label">充值余额</span><span class="bdi-value" id="toppedUpBalance">--</span></div>
+                    <div class="balance-detail-item"><span class="bdi-label">赠送余额</span><span class="bdi-value" id="bonusBalance">--</span></div>
+                    <div class="balance-detail-item"><span class="bdi-label">本月消费</span><span class="bdi-value cost" id="monthlyCost">--</span></div>
+                    <div class="balance-detail-item"><span class="bdi-label">可用 Token</span><span class="bdi-value" id="tokenEstValue">--</span></div>
+                    <div class="balance-detail-item"><span class="bdi-label">缓存命中率</span><span class="bdi-value hit" id="balanceHitRate">--</span></div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="today-chart-grid">
+                    <div class="stat-card today-card"><h2 class="section-title">今日用量</h2><div class="today-stats"><div class="today-stat"><div class="ts-label">输入 Token</div><div class="ts-value" id="todayInput">--</div></div><div class="today-stat"><div class="ts-label">输出 Token</div><div class="ts-value" id="todayOutput">--</div></div><div class="today-stat primary"><div class="ts-label">总消耗 Token</div><div class="ts-value" id="todayTotal">--</div></div><div class="today-stat"><div class="ts-label">今日费用</div><div class="ts-value cost-sm" id="todayCost">--</div></div></div></div>
+                    <div class="stat-card chart-card"><h2 class="section-title">最近 7 天消耗</h2><div class="chart-container" id="barChart"><div class="loading-placeholder">加载中</div></div></div>
+                </div>
+            </section>
+
+            <section class="section"><h2 class="section-title">模型用量监控</h2><div class="model-cards" id="modelCards"><div class="loading-placeholder">加载中</div></div></section>
+
+            <div class="refresh-info"><span>更新于 <span id="lastUpdate">--</span></span><span class="auto-refresh">每 60 秒自动刷新</span><button class="btn btn-sm" onclick="refreshData()">立即刷新</button><button class="btn btn-sm" id="autostartBtn" onclick="toggleAutostart()">开机自启</button></div>
+        </main>
+
+        <footer class="footer"><span>数据来源: platform.deepseek.com</span></footer>
+    </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
