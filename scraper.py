@@ -17,6 +17,25 @@ logger = logging.getLogger(__name__)
 
 USER_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "browser_state")
 CHROMIUM_PATH = os.environ.get("CHROMIUM_PATH")  # 可选：自定义浏览器路径，跳过 playwright install
+HEADED_MODE = os.environ.get("DEEPSEEK_HEADED", "").lower() in ("1", "true", "yes")  # 有头模式
+
+# 注入脚本：隐藏 webdriver 特征，防止被检测为机器人
+ANTI_DETECTION_SCRIPT = """
+// 移除 navigator.webdriver 标记
+Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+// 伪造 chrome.runtime
+window.chrome = { runtime: {} };
+// 伪造权限查询
+const originalQuery = window.navigator.permissions.query;
+window.navigator.permissions.query = (parameters) => (
+    parameters.name === 'notifications' ?
+    Promise.resolve({ state: Notification.permission }) :
+    originalQuery(parameters)
+);
+// 覆盖 plugins 和 languages
+Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+Object.defineProperty(navigator, 'languages', { get: () => ['zh-CN', 'zh', 'en'] });
+"""
 
 API_BASE = "https://platform.deepseek.com"
 ENDPOINTS = {
@@ -56,13 +75,24 @@ class DeepSeekScraper:
             self._playwright = await async_playwright().start()
             launch_args = {
                 "user_data_dir": USER_DATA_DIR,
-                "headless": True,
+                "headless": not HEADED_MODE,
                 "viewport": {"width": 1400, "height": 900},
+                "args": [
+                    "--disable-blink-features=AutomationControlled",
+                    "--disable-dev-shm-usage",
+                ],
+                "user_agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/131.0.0.0 Safari/537.36"
+                ),
             }
             if CHROMIUM_PATH:
                 launch_args["executable_path"] = CHROMIUM_PATH
                 logger.info(f"Using custom browser: {CHROMIUM_PATH}")
             self._context = await self._playwright.chromium.launch_persistent_context(**launch_args)
+            # 注入反检测脚本，对新页面自动生效
+            await self._context.add_init_script(ANTI_DETECTION_SCRIPT)
             self._page = await self._context.new_page()
             await self._extract_auth()
 

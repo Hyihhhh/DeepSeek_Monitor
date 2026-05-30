@@ -72,6 +72,24 @@ python float_ball.py
 
 首次启动需要登录 DeepSeek 账号，登录态会通过持久化浏览器上下文保留。
 
+## 常见问题
+
+### 登录时显示"网络错误"
+
+大概率是 DeepSeek 检测到了 headless 浏览器。已内置反检测脚本，通常可以正常工作。如果仍然报错，尝试有头模式：
+
+```bash
+# Windows PowerShell
+$env:DEEPSEEK_HEADED = "1"
+python desktop.py
+
+# Windows CMD
+set DEEPSEEK_HEADED=1
+python desktop.py
+```
+
+有头模式会显示浏览器窗口，避免被检测为机器人。
+
 ## 项目结构
 
 ```
