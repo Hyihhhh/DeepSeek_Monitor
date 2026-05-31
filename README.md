@@ -13,9 +13,7 @@
 ## 环境要求
 
 - Python 3.8+
-- Chromium 浏览器（二选一）：
-  - **方案 A（推荐）**：使用系统已安装的 Chrome/Edge，无需下载
-  - **方案 B**：Playwright Chromium（需下载 ~150MB）
+- Chromium 浏览器（三选一，见下方安装说明）
 
 ## 安装
 
@@ -25,9 +23,21 @@ cd DeepSeek_Monitor
 pip install -r requirements.txt
 ```
 
-### 浏览器配置
+### 浏览器配置（三选一）
 
-**方案 A：使用系统浏览器（跳过下载，国内首选）**
+**方案 C：一键安装离线 Chromium（国内推荐 ⭐）**
+
+运行项目内置的安装脚本，自动下载预打包的 Chromium 浏览器（~150MB，解压后约 300MB）：
+
+```bash
+python setup_chromium.py
+```
+
+下载完成后直接启动即可，无需额外配置。Chromium 包托管在 GitHub Releases，国内可正常访问。
+
+> 如果下载失败，手动访问 [Releases 页面](https://github.com/Hyihhhh/DeepSeek_Monitor/releases)，找到 `chromium-bundle` 标签，下载所有 `chromium-win.part*.zip` 分片文件放到项目根目录，然后运行 `python setup_chromium.py --local`。
+
+**方案 A：使用系统浏览器（跳过下载）**
 
 设置环境变量指向你电脑上的 Chrome 或 Edge：
 
@@ -95,9 +105,11 @@ python desktop.py
 ```
 desktop.py          → 入口：预初始化 scraper，daemon 线程启动 Flask，创建 pywebview 窗口
 app.py              → Flask 后端，独立 asyncio 工作线程处理 Playwright 操作
-scraper.py          → DeepSeekScraper：登录、Token 提取、API 调用
+scraper.py          → DeepSeekScraper：登录、Token 提取、API 调用，自动检测本地 Chromium
 daily_tracker.py    → 用量快照存储，计算当日增量与 7 天历史
 float_ball.py       → tkinter 悬浮球窗口（无边框圆形）
+setup_chromium.py   → 一键下载安装 Chromium 离线包（国内用户推荐）
+pack_chromium.py    → 开发者工具：打包 Playwright Chromium 用于 GitHub Releases
 static/app.js       → 前端仪表盘：登录流程、余额告警、图表渲染
 static/style.css    → 样式
 templates/index.html → 仪表盘页面

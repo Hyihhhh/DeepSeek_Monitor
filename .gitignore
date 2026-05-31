@@ -13,9 +13,10 @@ capture_api.py
 parse_html.py
 data/daily_snapshots.json
 startup.log
-CLAUDE.md
 _convert_img.py
 _read_img.py
-page_*.html
-screenshot_*.png
-api_calls.json
+
+# 项目本地 Chromium 离线包（由 setup_chromium.py 下载）
+browser/
+chromium-win.zip
+chromium-win.zip.parts/

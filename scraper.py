@@ -16,7 +16,43 @@ import httpx
 logger = logging.getLogger(__name__)
 
 USER_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "browser_state")
-CHROMIUM_PATH = os.environ.get("CHROMIUM_PATH")  # 可选：自定义浏览器路径，跳过 playwright install
+def _resolve_chromium_path():
+    """解析 Chromium 可执行文件路径，按优先级：
+    1. 项目本地离线包: browser/chrome-win/chrome.exe
+    2. CHROMIUM_PATH 环境变量
+    3. 返回 None，由 Playwright 使用默认浏览器
+    只在文件存在且大小 > 50MB（防止损坏文件）时返回路径。
+    """
+    import platform
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 优先级 1：项目本地离线包
+    candidates = []
+    system = platform.system()
+    if system == "Windows":
+        candidates = [os.path.join(project_dir, "browser", "chrome-win", "chrome.exe")]
+    elif system == "Darwin":
+        candidates = [os.path.join(project_dir, "browser", "Chromium.app",
+                                    "Contents", "MacOS", "Chromium")]
+    elif system == "Linux":
+        candidates = [os.path.join(project_dir, "browser", "chrome-linux", "chrome")]
+
+    for candidate in candidates:
+        if os.path.isfile(candidate) and os.path.getsize(candidate) > 50_000_000:
+            logger.info(f"Using project-local Chromium: {candidate}")
+            return candidate
+
+    # 优先级 2：环境变量 CHROMIUM_PATH
+    env_path = os.environ.get("CHROMIUM_PATH")
+    if env_path:
+        if os.path.isfile(env_path):
+            logger.info(f"Using CHROMIUM_PATH: {env_path}")
+            return env_path
+        else:
+            logger.warning(f"CHROMIUM_PATH is set but file not found: {env_path}")
+
+    # 优先级 3：返回 None，Playwright 使用默认浏览器
+    return None
 HEADED_MODE = os.environ.get("DEEPSEEK_HEADED", "").lower() in ("1", "true", "yes")  # 有头模式
 
 # 注入脚本：隐藏 webdriver 特征，防止被检测为机器人
@@ -87,9 +123,9 @@ class DeepSeekScraper:
                     "Chrome/131.0.0.0 Safari/537.36"
                 ),
             }
-            if CHROMIUM_PATH:
-                launch_args["executable_path"] = CHROMIUM_PATH
-                logger.info(f"Using custom browser: {CHROMIUM_PATH}")
+            resolved = _resolve_chromium_path()
+            if resolved:
+                launch_args["executable_path"] = resolved
             self._context = await self._playwright.chromium.launch_persistent_context(**launch_args)
             # 注入反检测脚本，对新页面自动生效
             await self._context.add_init_script(ANTI_DETECTION_SCRIPT)
